@@ -44,7 +44,6 @@ interface GameState {
     bullets: BulletData[];
     shipPosition: [number, number, number];
     landingProgress: number;
-    youtubeId: string;
 
     decrementBarrier: () => void;
     regenerateBarrier: () => void;
@@ -54,7 +53,6 @@ interface GameState {
     resetGame: () => void;
     setShipPosition: (pos: [number, number, number]) => void;
     setLandingProgress: (p: number) => void;
-    setYoutubeId: (id: string) => void;
 
     addAsteroid: (asteroid: AsteroidData) => void;
     removeAsteroid: (id: string) => void;
@@ -103,7 +101,6 @@ export const useGameStore = create<GameState>((set, get) => ({
     bullets: [],
     shipPosition: [0, 0, 0],
     landingProgress: 0,
-    youtubeId: "cHHLHGNpCSA",
 
     decrementBarrier: () =>
         set((state) => ({
@@ -139,8 +136,6 @@ export const useGameStore = create<GameState>((set, get) => ({
         set({ shipPosition: pos }),
 
     setLandingProgress: (p: number) => set({ landingProgress: p }),
-
-    setYoutubeId: (id: string) => set({ youtubeId: id }),
 
     addAsteroid: (asteroid: AsteroidData) =>
         set((state) => ({ asteroids: [...state.asteroids, asteroid] })),

@@ -43,10 +43,8 @@ export default function HUD() {
     const distance = useGameStore((s) => s.distance);
     const maxDistance = useGameStore((s) => s.maxDistance);
     const phase = useGameStore((s) => s.phase);
-    const youtubeId = useGameStore((s) => s.youtubeId);
 
     const setPhase = useGameStore((s) => s.setPhase);
-    const setYoutubeId = useGameStore((s) => s.setYoutubeId);
     const resetGame = useGameStore((s) => s.resetGame);
     const spawnInitialAsteroids = useGameStore((s) => s.spawnInitialAsteroids);
 
@@ -64,7 +62,6 @@ export default function HUD() {
     const handleRestart = () => {
         resetGame();
         // keep music playing
-        if (youtubeId) setYoutubeId(youtubeId);
         spawnInitialAsteroids();
         setNoBtnState("normal");
         setYesPressed(false);
@@ -108,17 +105,11 @@ export default function HUD() {
             }}
         >
             {/* Only mount player after interaction to ensure browser allows autoplay */}
-            {isPlayingMusic && youtubeId && (
-                <div style={{ position: "fixed", top: -9999, left: -9999, opacity: 0, pointerEvents: "none" }}>
-                    <iframe
-                        width="1"
-                        height="1"
-                        src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&loop=1&playlist=${youtubeId}&controls=0&enablejsapi=1`}
-                        title="Background Music"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                    />
-                </div>
+            {isPlayingMusic && (
+                <audio autoPlay loop style={{ display: 'none' }}>
+                    <source src="/day/music.mp3" type="audio/mpeg" />
+                    Your browser does not support the audio element.
+                </audio>
             )}
 
             {/* Top bar */}

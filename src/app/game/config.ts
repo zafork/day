@@ -1,4 +1,4 @@
-export const MAX_DISTANCE = 100;
+export const MAX_DISTANCE = 500;
 export const DISTANCE_SPEED = 10;
 export const LANDING_PHASE_RATIO = 0.92;
 export const PLANET_VISIBLE_RATIO = 0.55;
