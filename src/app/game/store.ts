@@ -32,7 +32,7 @@ export interface BulletData {
     direction: [number, number, number];
 }
 
-export type GamePhase = "playing" | "landing" | "won" | "gameover";
+export type GamePhase = "start" | "playing" | "landing" | "won" | "gameover";
 
 interface GameState {
     barriers: number;
@@ -43,9 +43,9 @@ interface GameState {
     asteroids: AsteroidData[];
     bullets: BulletData[];
     shipPosition: [number, number, number];
-    landingProgress: number; // 0→1 during landing animation
+    landingProgress: number;
+    youtubeId: string;
 
-    // Actions
     decrementBarrier: () => void;
     regenerateBarrier: () => void;
     addScore: (points: number) => void;
@@ -54,17 +54,15 @@ interface GameState {
     resetGame: () => void;
     setShipPosition: (pos: [number, number, number]) => void;
     setLandingProgress: (p: number) => void;
+    setYoutubeId: (id: string) => void;
 
-    // Asteroid management
     addAsteroid: (asteroid: AsteroidData) => void;
     removeAsteroid: (id: string) => void;
     clearAsteroids: () => void;
 
-    // Bullet management
     addBullet: (bullet: BulletData) => void;
     removeBullet: (id: string) => void;
 
-    // Spawn helpers
     spawnInitialAsteroids: () => void;
     splitAsteroid: (id: string) => void;
 }
@@ -100,11 +98,12 @@ export const useGameStore = create<GameState>((set, get) => ({
     score: 0,
     distance: 0,
     maxDistance: MAX_DISTANCE,
-    phase: "playing",
+    phase: "start",
     asteroids: [],
     bullets: [],
     shipPosition: [0, 0, 0],
     landingProgress: 0,
+    youtubeId: "cHHLHGNpCSA",
 
     decrementBarrier: () =>
         set((state) => ({
@@ -140,6 +139,8 @@ export const useGameStore = create<GameState>((set, get) => ({
         set({ shipPosition: pos }),
 
     setLandingProgress: (p: number) => set({ landingProgress: p }),
+
+    setYoutubeId: (id: string) => set({ youtubeId: id }),
 
     addAsteroid: (asteroid: AsteroidData) =>
         set((state) => ({ asteroids: [...state.asteroids, asteroid] })),

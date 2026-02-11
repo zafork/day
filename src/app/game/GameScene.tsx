@@ -35,7 +35,6 @@ import {
     BARRIER_REGEN_INTERVAL,
 } from "./config";
 
-/* ---------- collision helper ---------- */
 function dist3(
     a: [number, number, number],
     b: [number, number, number]
@@ -45,7 +44,6 @@ function dist3(
     );
 }
 
-/* ---------- Improved Planet component ---------- */
 function Planet() {
     const meshRef = useRef<THREE.Group>(null);
     const distance = useGameStore((s) => s.distance);
@@ -63,10 +61,9 @@ function Planet() {
 
     if (!visible) return null;
 
-    // Planet grows as you approach: starts tiny, grows to full size
     const approachFactor = Math.min(1, (progress - PLANET_VISIBLE_RATIO) / (1 - PLANET_VISIBLE_RATIO));
     const baseScale = 0.1 + approachFactor * 0.9;
-    // During landing, planet gets even closer and larger
+
     const landingScale = phase === "landing" || phase === "won"
         ? baseScale + landingProgress * 3
         : baseScale;
@@ -76,15 +73,15 @@ function Planet() {
 
     return (
         <group ref={meshRef} position={[0, -2, planetZ]} scale={[landingScale, landingScale, landingScale]}>
-            {/* Planet body — oceanic world */}
+            {/* Planet body — icy celeste world */}
             <mesh>
                 <sphereGeometry args={[PLANET_RADIUS, 64, 64]} />
                 <meshStandardMaterial
-                    color="#1565C0"
-                    emissive="#0D47A1"
-                    emissiveIntensity={0.2}
-                    roughness={0.6}
-                    metalness={0.1}
+                    color="#00BFFF"
+                    emissive="#005577"
+                    emissiveIntensity={0.3}
+                    roughness={0.5}
+                    metalness={0.2}
                 />
             </mesh>
 
@@ -92,11 +89,11 @@ function Planet() {
             <mesh rotation={[0.3, 0.8, 0.1]}>
                 <sphereGeometry args={[PLANET_RADIUS * 1.002, 48, 48]} />
                 <meshStandardMaterial
-                    color="#2E7D32"
+                    color="#87CEEB"
                     transparent
-                    opacity={0.55}
-                    roughness={0.8}
-                    metalness={0.05}
+                    opacity={0.6}
+                    roughness={0.7}
+                    metalness={0.1}
                 />
             </mesh>
 
@@ -104,23 +101,22 @@ function Planet() {
             <mesh rotation={[0, 0, 0]} position={[0, PLANET_RADIUS * 0.92, 0]}>
                 <sphereGeometry args={[PLANET_RADIUS * 0.35, 16, 16]} />
                 <meshStandardMaterial
-                    color="#E3F2FD"
+                    color="#E0FFFF"
                     transparent
-                    opacity={0.7}
-                    roughness={0.3}
+                    opacity={0.8}
+                    roughness={0.2}
                 />
             </mesh>
             <mesh rotation={[Math.PI, 0, 0]} position={[0, -PLANET_RADIUS * 0.92, 0]}>
                 <sphereGeometry args={[PLANET_RADIUS * 0.25, 16, 16]} />
                 <meshStandardMaterial
-                    color="#E3F2FD"
+                    color="#E0FFFF"
                     transparent
-                    opacity={0.6}
-                    roughness={0.3}
+                    opacity={0.7}
+                    roughness={0.2}
                 />
             </mesh>
 
-            {/* Clouds layer */}
             <mesh rotation={[0.15, 1.2, 0.05]}>
                 <sphereGeometry args={[PLANET_RADIUS * 1.03, 48, 48]} />
                 <meshStandardMaterial
@@ -131,7 +127,6 @@ function Planet() {
                 />
             </mesh>
 
-            {/* Atmosphere — inner glow */}
             <mesh>
                 <sphereGeometry args={[PLANET_RADIUS * 1.08, 32, 32]} />
                 <meshBasicMaterial
@@ -142,7 +137,6 @@ function Planet() {
                 />
             </mesh>
 
-            {/* Atmosphere — outer halo */}
             <mesh>
                 <sphereGeometry args={[PLANET_RADIUS * 1.2, 32, 32]} />
                 <meshBasicMaterial
@@ -153,13 +147,11 @@ function Planet() {
                 />
             </mesh>
 
-            {/* Planet illumination */}
             <pointLight color="#64B5F6" intensity={6} distance={80} />
         </group>
     );
 }
 
-/* ---------- Speed lines (forward travel feel) ---------- */
 function SpeedLines() {
     const count = SPEED_LINE_COUNT;
     const meshRef = useRef<THREE.InstancedMesh>(null);
@@ -208,7 +200,136 @@ function SpeedLines() {
     );
 }
 
-/* ---------- Inner scene logic (useFrame) ---------- */
+function Sun({ visible }: { visible: boolean }) {
+    const meshRef = useRef<THREE.Group>(null);
+    const glowRef = useRef<THREE.Mesh>(null);
+
+    useFrame((state, delta) => {
+        if (!meshRef.current) return;
+        meshRef.current.rotation.y += delta * 0.05;
+
+        if (glowRef.current) {
+            glowRef.current.scale.setScalar(1.2 + Math.sin(state.clock.elapsedTime * 2) * 0.05);
+            glowRef.current.rotation.z -= delta * 0.1;
+        }
+    });
+
+    if (!visible) return null;
+
+    return (
+        <group ref={meshRef} position={[10, 5, -10]}>
+            {/* Core */}
+            <mesh>
+                <sphereGeometry args={[4, 64, 64]} />
+                <meshStandardMaterial
+                    color="#FDB813"
+                    emissive="#FF8C00"
+                    emissiveIntensity={3}
+                    toneMapped={false}
+                />
+            </mesh>
+            <pointLight intensity={3} distance={100} color="#FDB813" decay={2} />
+
+            {/* Inner Glow / Corona */}
+            <mesh ref={glowRef}>
+                <sphereGeometry args={[4.2, 32, 32]} />
+                <meshBasicMaterial
+                    color="#FF4500"
+                    transparent
+                    opacity={0.3}
+                    side={THREE.BackSide}
+                    blending={THREE.AdditiveBlending}
+                />
+            </mesh>
+
+            {/* Outer Raidance/Halo */}
+            <mesh scale={[1.5, 1.5, 1.5]}>
+                <sphereGeometry args={[4, 32, 32]} />
+                <meshBasicMaterial
+                    color="#FFD700"
+                    transparent
+                    opacity={0.15}
+                    side={THREE.BackSide}
+                    blending={THREE.AdditiveBlending}
+                />
+            </mesh>
+        </group>
+    );
+}
+
+function Galaxy({ visible }: { visible: boolean }) {
+    const pointsRef = useRef<THREE.Points>(null);
+
+    // Generate spiral galaxy particles
+    const particleCount = 2000;
+    const { positions, colors } = useMemo(() => {
+        const positions = new Float32Array(particleCount * 3);
+        const colors = new Float32Array(particleCount * 3);
+        const colorInside = new THREE.Color("#ff0066");
+        const colorOutside = new THREE.Color("#00ccff");
+
+        for (let i = 0; i < particleCount; i++) {
+            const radius = Math.random() * 20 + 2;
+            const spinAngle = radius * 0.8;
+            const branchAngle = (i % 3) * ((2 * Math.PI) / 3);
+
+            const randomX = Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1) * 0.5;
+            const randomY = Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1) * 0.5;
+            const randomZ = Math.pow(Math.random(), 3) * (Math.random() < 0.5 ? 1 : -1) * 0.5;
+
+            positions[i * 3] = Math.cos(branchAngle + spinAngle) * radius + randomX;
+            positions[i * 3 + 1] = (Math.random() - 0.5) * 2 + randomY;
+            positions[i * 3 + 2] = Math.sin(branchAngle + spinAngle) * radius + randomZ;
+
+            const mixedColor = colorInside.clone().lerp(colorOutside, radius / 20);
+
+            colors[i * 3] = mixedColor.r;
+            colors[i * 3 + 1] = mixedColor.g;
+            colors[i * 3 + 2] = mixedColor.b;
+        }
+        return { positions, colors };
+    }, []);
+
+    useFrame((_, delta) => {
+        if (!pointsRef.current) return;
+        pointsRef.current.rotation.y += delta * 0.05;
+    });
+
+    if (!visible) return null;
+
+    return (
+        <group position={[0, 0, -30]} rotation={[0.4, 0, 0]}>
+            <points ref={pointsRef}>
+                <bufferGeometry>
+                    <bufferAttribute
+                        attach="attributes-position"
+                        count={particleCount}
+                        array={positions}
+                        itemSize={3}
+                        args={[positions, 3]}
+                    />
+                    <bufferAttribute
+                        attach="attributes-color"
+                        count={particleCount}
+                        array={colors}
+                        itemSize={3}
+                        args={[colors, 3]}
+                    />
+                </bufferGeometry>
+                <pointsMaterial
+                    size={0.2}
+                    sizeAttenuation={true}
+                    depthWrite={false}
+                    vertexColors={true}
+                    blending={THREE.AdditiveBlending}
+                    transparent
+                    opacity={0.8}
+                />
+            </points>
+        </group>
+    );
+}
+
 function SceneLogic() {
     const phase = useGameStore((s) => s.phase);
     const asteroids = useGameStore((s) => s.asteroids);
@@ -229,24 +350,21 @@ function SceneLogic() {
     const landingStartedRef = useRef(false);
 
     useFrame((_, delta) => {
-        if (phase === "won" || phase === "gameover") return;
+        if (phase === "start" || phase === "won" || phase === "gameover") return;
 
         const state = useGameStore.getState();
 
-        // ===== LANDING PHASE =====
         if (phase === "landing") {
             landingTimerRef.current += delta;
-            const landingDuration = 4; // seconds
+            const landingDuration = 4;
             const progress = Math.min(1, landingTimerRef.current / landingDuration);
             setLandingProgress(progress);
 
-            // Clear remaining asteroids at start of landing
             if (!landingStartedRef.current) {
                 landingStartedRef.current = true;
                 clearAsteroids();
             }
 
-            // Distance keeps incrementing slowly during landing
             incrementDistance(delta * 3);
 
             if (progress >= 1) {
@@ -255,10 +373,8 @@ function SceneLogic() {
             return;
         }
 
-        // ===== PLAYING PHASE =====
         incrementDistance(delta * DISTANCE_SPEED);
 
-        // Check for landing phase trigger
         if (state.distance >= state.maxDistance * LANDING_PHASE_RATIO) {
             setPhase("landing");
             landingTimerRef.current = 0;
@@ -271,7 +387,6 @@ function SceneLogic() {
             collisionCooldownRef.current - delta
         );
 
-        // --- bullet ↔ asteroid collision ---
         const bulletsToRemove = new Set<string>();
         const asteroidsToSplit = new Set<string>();
 
@@ -288,7 +403,6 @@ function SceneLogic() {
         for (const id of bulletsToRemove) removeBullet(id);
         for (const id of asteroidsToSplit) splitAsteroid(id);
 
-        // --- asteroid ↔ ship collision (use actual ship position) ---
         if (collisionCooldownRef.current <= 0) {
             const shipPos = state.shipPosition;
             for (const asteroid of asteroids) {
@@ -307,14 +421,12 @@ function SceneLogic() {
             }
         }
 
-        // --- remove out-of-bounds asteroids ---
         for (const asteroid of asteroids) {
             if (asteroid.position[2] > ASTEROID_OOB_Z) {
                 removeAsteroid(asteroid.id);
             }
         }
 
-        // --- spawn new asteroids periodically ---
         spawnTimerRef.current += delta;
         const spawnInterval = Math.max(
             SPAWN_INTERVAL_MIN,
@@ -345,7 +457,6 @@ function SceneLogic() {
     return null;
 }
 
-/* ---------- Main GameScene ---------- */
 export default function GameScene() {
     const asteroids = useGameStore((s) => s.asteroids);
     const bullets = useGameStore((s) => s.bullets);
@@ -359,12 +470,10 @@ export default function GameScene() {
         [removeBullet]
     );
 
-    // Spawn initial asteroids
     useEffect(() => {
         spawnInitialAsteroids();
     }, [spawnInitialAsteroids]);
 
-    // Barrier regeneration
     useEffect(() => {
         const interval = setInterval(() => {
             const state = useGameStore.getState();
@@ -386,39 +495,37 @@ export default function GameScene() {
                     camera.lookAt(...CAMERA_LOOK_AT);
                 }}
             >
-                {/* Lighting */}
                 <ambientLight intensity={0.12} />
                 <directionalLight position={[5, 10, 5]} intensity={0.5} />
                 <directionalLight position={[-3, -5, -15]} intensity={0.25} color="#4466ff" />
 
-                {/* Fog for depth feel */}
                 <fog attach="fog" args={["#000011", 40, 150]} />
 
-                {/* Background */}
                 <Stars />
                 <SpeedLines />
 
-                {/* Planet destination */}
                 <Planet />
 
-                {/* Game logic */}
+                {/* Sun (Start Phase) */}
+                <Sun visible={phase === "start"} />
+
+                {/* Galaxy (Won Phase) */}
+                <Galaxy visible={phase === "won"} />
+
+
                 <SceneLogic />
 
-                {/* Ship */}
                 {showShip && <Ship />}
 
-                {/* Asteroids */}
                 {asteroids.map((a) => (
                     <Asteroid key={a.id} data={a} />
                 ))}
 
-                {/* Bullets */}
                 {bullets.map((b) => (
                     <Bullet key={b.id} data={b} onOutOfBounds={handleBulletOOB} />
                 ))}
             </Canvas>
 
-            {/* HTML overlay HUD */}
             <HUD />
         </div>
     );
