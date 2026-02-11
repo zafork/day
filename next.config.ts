@@ -1,8 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  devIndicators: false,
-  output: 'export',
+  output: "export",
+  basePath: "/day",
+  assetPrefix: "/day/",
   images: {
     unoptimized: true,
   },
