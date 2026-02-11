@@ -563,7 +563,7 @@ export default function HUD() {
                                     textShadow: "0 0 20px #00BFFF",
                                 }}
                             >
-                                <TypewriterText text="AHORA ERES MI COMPILOTO" speed={50} />
+                                <TypewriterText text="SABIA QUE DIRIAS QUE SI <3 AHORA ERES MI COMPILOTO" speed={50} />
                             </h2>
                             <p style={{ fontSize: 20, color: "#fff" }}>
                                 <TypewriterText text="Te veo el 14 de Febrero. 🚀" speed={50} />
